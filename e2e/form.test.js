@@ -4,11 +4,13 @@ import { fork } from 'child_process';
 jest.setTimeout(30000);
 
 describe("in form", () => {
-  let browser;
-  let page;
+  let browser = null;
+  let page = null;
+  let server = null;
+  const baseUrl = 'http://localhost:8080';
 
   //запуск браузера
-  beforeEach(async () => {
+  beforeAll(async () => {
     server = fork(`${__dirname}/e2e.server.js`);
 
     await new Promise((resolve, reject) => {
@@ -18,31 +20,31 @@ describe("in form", () => {
           resolve();
         }
       });
+
     });
 
-    browser = await puppeteer.launch({
-      //опции при запуске браузера
-      headless: false, //чтобы показывать реальный браузер
-      slowMo: 250,
-      // devtools: true,//чтобы видеть инструменты разработчика
-    });
-
+    browser = await puppeteer.launch();
     page = await browser.newPage();
   });
 
-  // закрыть браузер
   afterAll(async () => {
     await browser.close();
+    server.kill();
   });
 
+  // закрыть браузер
+  // afterAll(async () => {
+  //   await browser.close();
+  // });
+
   test("form should render on page", async () => {
-    await page.goto("http://localhost:8080");
+    await page.goto(baseUrl);
 
     await page.waitForSelector(".filter-widget-form"); //этот метод заставит браузер ждать появления селектора body
   });
 
   test("valid form", async () => {
-    await page.goto("http://localhost:8080");
+    await page.goto(baseUrl);
 
     await page.waitForSelector(".filter-widget-form"); //этот метод заставит браузер ждать появления селектора body
 
@@ -55,7 +57,5 @@ describe("in form", () => {
     await page.waitForSelector(".filter-widget-form");
   });
   
-  afterAll(async () => {
-    await browser.close();
-  });
+ 
 });

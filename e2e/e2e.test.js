@@ -1,12 +1,13 @@
-import puppetteer from "puppeteer";
+import puppeteer from "puppeteer";
 import { fork } from 'child_process';
 
 jest.setTimeout(30000); // default puppeteer timeout
 
 describe("card validator form", () => {
-  let browser;
-  let page;
-  const baseUrl = "http://localhost:8080";
+  let browser = null;
+  let page = null;
+  let server = null;
+  const baseUrl = 'http://localhost:8080';
 
   beforeAll(async () => {
     server = fork(`${__dirname}/e2e.server.js`);
@@ -20,16 +21,13 @@ describe("card validator form", () => {
       });
     });
     
-    browser = await puppetteer.launch({
-      // headless: false, // чтобы показывать реальный браузер
-      // slowMo: 250,
-      // devtools: true, // чтобы видеть инструменты разработчика
-    });
+    browser = await puppeteer.launch();
     page = await browser.newPage(); //браузер открывает страницу
   });
   //закрывает браузер
   afterAll(async () => {
     await browser.close();
+    server.kill();
   });
 
   test("form should render on page start", async () => {
@@ -65,7 +63,5 @@ describe("card validator form", () => {
     await expect(result).toBe("Введён некорректный номер карты!");
   });
 
-  afterAll(async () => {
-    await browser.close();
-  });
+  
 });
