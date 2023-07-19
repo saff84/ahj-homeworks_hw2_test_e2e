@@ -1,4 +1,5 @@
 import puppetteer from "puppeteer";
+import { fork } from 'child_process';
 
 jest.setTimeout(30000); // default puppeteer timeout
 
@@ -8,9 +9,20 @@ describe("card validator form", () => {
   const baseUrl = "http://localhost:8080";
 
   beforeAll(async () => {
+    server = fork(`${__dirname}/e2e.server.js`);
+
+    await new Promise((resolve, reject) => {
+      server.on('error', reject);
+      server.on('message', (message) => {
+        if (message === 'ok') {
+          resolve();
+        }
+      });
+    });
+    
     browser = await puppetteer.launch({
-      headless: false, // чтобы показывать реальный браузер
-      slowMo: 250,
+      // headless: false, // чтобы показывать реальный браузер
+      // slowMo: 250,
       // devtools: true, // чтобы видеть инструменты разработчика
     });
     page = await browser.newPage(); //браузер открывает страницу

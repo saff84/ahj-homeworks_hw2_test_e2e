@@ -1,4 +1,5 @@
 import puppeteer from "puppeteer";
+import { fork } from 'child_process';
 
 describe("page start", () => {
   let browser;
@@ -7,6 +8,17 @@ describe("page start", () => {
 
   //запуск браузера
   beforeEach(async () => {
+    server = fork(`${__dirname}/e2e.server.js`);
+
+    await new Promise((resolve, reject) => {
+      server.on('error', reject);
+      server.on('message', (message) => {
+        if (message === 'ok') {
+          resolve();
+        }
+      });
+    });
+
     browser = await puppeteer.launch({
       //опции при запуске браузера
       headless: false, //чтобы показывать реальный браузер
